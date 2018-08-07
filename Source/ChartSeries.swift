@@ -16,6 +16,8 @@ open class ChartSeries {
     */
     open var data: [(x: Double, y: Double)]
 
+    open var boolData = [Bool]()
+    
     /**
     When set to `false`, will hide the series line. Useful for drawing only the area with `area=true`.
     */

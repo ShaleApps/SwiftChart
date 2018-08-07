@@ -333,21 +333,21 @@ open class Chart: UIControl {
         // Draw content
 
         for (index, series) in self.series.enumerated() {
-
             // Separate each line in multiple segments over and below the x axis
             let segments = Chart.segmentLine(series.data as ChartLineSegment, zeroLevel: series.colors.zeroLevel)
 
-            segments.forEach({ segment in
+            for (segIndex, segment) in segments.enumerated() {
+                let boolValue = series.boolData[segIndex]
                 let scaledXValues = scaleValuesOnXAxis( segment.map { $0.x } )
                 let scaledYValues = scaleValuesOnYAxis( segment.map { $0.y } )
-
+                
                 if series.line {
-                    drawLine(scaledXValues, yValues: scaledYValues, seriesIndex: index)
+                    drawLine(scaledXValues, yValues: scaledYValues, seriesIndex: index, boolVal: boolValue)
                 }
                 if series.area {
-                    drawArea(scaledXValues, yValues: scaledYValues, seriesIndex: index)
+                    drawArea(scaledXValues, yValues: scaledYValues, seriesIndex: index, boolVal: boolValue)
                 }
-            })
+            }
         }
 
         drawAxes()
@@ -461,9 +461,7 @@ open class Chart: UIControl {
 
     // MARK: - Drawings
 
-    fileprivate func drawLine(_ xValues: [Double], yValues: [Double], seriesIndex: Int) {
-        // YValues are "reverted" from top to bottom, so 'above' means <= level
-        let isAboveZeroLine = yValues.max()! <= self.scaleValueOnYAxis(series[seriesIndex].colors.zeroLevel)
+    fileprivate func drawLine(_ xValues: [Double], yValues: [Double], seriesIndex: Int, boolVal: Bool) {
         let path = CGMutablePath()
         path.move(to: CGPoint(x: CGFloat(xValues.first!), y: CGFloat(yValues.first!)))
         for i in 1..<yValues.count {
@@ -475,10 +473,10 @@ open class Chart: UIControl {
         lineLayer.frame = self.bounds
         lineLayer.path = path
 
-        if isAboveZeroLine {
-            lineLayer.strokeColor = series[seriesIndex].colors.above.cgColor
-        } else {
+        if boolVal {
             lineLayer.strokeColor = series[seriesIndex].colors.below.cgColor
+        } else {
+            lineLayer.strokeColor = series[seriesIndex].colors.above.cgColor
         }
         lineLayer.fillColor = nil
         lineLayer.lineWidth = lineWidth
@@ -489,9 +487,8 @@ open class Chart: UIControl {
         layerStore.append(lineLayer)
     }
 
-    fileprivate func drawArea(_ xValues: [Double], yValues: [Double], seriesIndex: Int) {
-        // YValues are "reverted" from top to bottom, so 'above' means <= level
-        let isAboveZeroLine = yValues.max()! <= self.scaleValueOnYAxis(series[seriesIndex].colors.zeroLevel)
+    fileprivate func drawArea(_ xValues: [Double], yValues: [Double], seriesIndex: Int, boolVal: Bool) {
+        let boolValues = series[seriesIndex]
         let area = CGMutablePath()
         let zero = CGFloat(getZeroValueOnYAxis(zeroLevel: 0))
 
@@ -504,10 +501,10 @@ open class Chart: UIControl {
         areaLayer.frame = self.bounds
         areaLayer.path = area
         areaLayer.strokeColor = nil
-        if isAboveZeroLine {
-            areaLayer.fillColor = series[seriesIndex].colors.above.withAlphaComponent(areaAlphaComponent).cgColor
-        } else {
+        if boolVal {
             areaLayer.fillColor = series[seriesIndex].colors.below.withAlphaComponent(areaAlphaComponent).cgColor
+        } else {
+            areaLayer.fillColor = series[seriesIndex].colors.above.withAlphaComponent(areaAlphaComponent).cgColor
         }
         areaLayer.lineWidth = 0
 
@@ -812,17 +809,18 @@ open class Chart: UIControl {
         var segment: ChartLineSegment = []
 
         line.enumerated().forEach { (i, point) in
-            segment.append(point)
+            if i == 0 {
+                segment.append(point)
+            }
             if i < line.count - 1 {
                 let nextPoint = line[i+1]
-                if point.y >= zeroLevel && nextPoint.y < zeroLevel || point.y < zeroLevel && nextPoint.y >= zeroLevel {
-                    // The segment intersects zeroLevel, close the segment with the intersection point
-                    let closingPoint = Chart.intersectionWithLevel(point, and: nextPoint, level: zeroLevel)
-                    segment.append(closingPoint)
-                    segments.append(segment)
-                    // Start a new segment
-                    segment = [closingPoint]
-                }
+                
+                // The segment intersects zeroLevel, close the segment with the intersection point
+                let closingPoint = nextPoint // Chart.intersectionWithLevel(point, and: nextPoint, level: point.y)
+                segment.append(closingPoint)
+                segments.append(segment)
+                // Start a new segment
+                segment = [closingPoint]
             } else {
                 // End of the line
                 segments.append(segment)
