@@ -756,6 +756,16 @@ open class Chart: UIControl {
     override open func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         handleTouchEvents(touches, event: event)
     }
+    
+    open override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        handleTouchEvents(touches, event: event)
+        if self.hideHighlightLineOnTouchEnd {
+            if let shapeLayer = highlightShapeLayer {
+                shapeLayer.path = nil
+            }
+        }
+        delegate?.didEndTouchingChart(self)
+    }
 
     // MARK: - Utilities
 
