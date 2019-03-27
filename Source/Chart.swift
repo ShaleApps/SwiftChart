@@ -13,7 +13,7 @@ public protocol ChartDelegate: class {
     Tells the delegate that the specified chart has been touched.
 
     - parameter chart: The chart that has been touched.
-    - parameter indexes: Each element of this array contains the index of the data that has been touched, one for each 
+    - parameter indexes: Each element of this array contains the index of the data that has been touched, one for each
       series. If the series hasn't been touched, its index will be nil.
     - parameter x: The value on the x-axis that has been touched.
     - parameter left: The distance from the left side of the chart.
@@ -22,7 +22,7 @@ public protocol ChartDelegate: class {
     func didTouchChart(_ chart: Chart, indexes: [Int?], x: Double, left: CGFloat)
 
     /**
-    Tells the delegate that the user finished touching the chart. The user will 
+    Tells the delegate that the user finished touching the chart. The user will
     "finish" touching the chart only swiping left/right outside the chart.
 
     - parameter chart: The chart that has been touched.
@@ -30,12 +30,12 @@ public protocol ChartDelegate: class {
     */
     func didFinishTouchingChart(_ chart: Chart)
     /**
-     Tells the delegate that the user ended touching the chart. The user 
-     will "end" touching the chart whenever the touchesDidEnd method is 
+     Tells the delegate that the user ended touching the chart. The user
+     will "end" touching the chart whenever the touchesDidEnd method is
      being called.
-     
+
      - parameter chart: The chart that has been touched.
-     
+
      */
     func didEndTouchingChart(_ chart: Chart)
 }
@@ -73,7 +73,7 @@ open class Chart: UIControl {
     }
 
     /**
-    The values to display as labels on the x-axis. You can format these values  with the `xLabelFormatter` attribute. 
+    The values to display as labels on the x-axis. You can format these values  with the `xLabelFormatter` attribute.
     As default, it will display the values of the series which has the most data.
     */
     open var xLabels: [Double]?
@@ -340,7 +340,7 @@ open class Chart: UIControl {
                 let boolValue = series.boolData[segIndex]
                 let scaledXValues = scaleValuesOnXAxis( segment.map { $0.x } )
                 let scaledYValues = scaleValuesOnYAxis( segment.map { $0.y } )
-                
+
                 if series.line {
                     drawLine(scaledXValues, yValues: scaledYValues, seriesIndex: index, boolVal: boolValue)
                 }
@@ -480,7 +480,7 @@ open class Chart: UIControl {
         }
         lineLayer.fillColor = nil
         lineLayer.lineWidth = lineWidth
-        lineLayer.lineJoin = kCALineJoinBevel
+        lineLayer.lineJoin = CAShapeLayerLineJoin.bevel
 
         self.layer.addSublayer(lineLayer)
 
@@ -756,7 +756,7 @@ open class Chart: UIControl {
     override open func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         handleTouchEvents(touches, event: event)
     }
-    
+
     open override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         handleTouchEvents(touches, event: event)
         if self.hideHighlightLineOnTouchEnd {
@@ -824,7 +824,7 @@ open class Chart: UIControl {
             }
             if i < line.count - 1 {
                 let nextPoint = line[i+1]
-                
+
                 // The segment intersects zeroLevel, close the segment with the intersection point
                 let closingPoint = nextPoint // Chart.intersectionWithLevel(point, and: nextPoint, level: point.y)
                 segment.append(closingPoint)
